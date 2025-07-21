@@ -32,7 +32,7 @@ int main() {
     for (int a = -11; a < 11; a++) {
         for (int b = -11; b < 11; b++) {
             auto choose_mat = random_double();
-            point3 center(a + 0.9*random_double(), 0.2, b + 0.9*random_double());
+            point3 center(a + 0.9*random_double(), random_balls_size, b + 0.9*random_double());
 
             if ((center - point3(4, 0.2, 0)).length() > 0.9) {
                 shared_ptr<material> sphere_material;
@@ -91,7 +91,7 @@ int main() {
     camera cam;
 
     cam.aspect_ratio = 16.0 / 9.0;
-    cam.image_width = 1600;
+    cam.image_width = 480;
     cam.samples_per_pixel = 100;
     cam.max_depth = 50;
 
