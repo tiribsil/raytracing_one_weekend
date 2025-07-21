@@ -27,8 +27,37 @@ int main() {
     auto ground_material = make_shared<lambertian>(color(0.2, 0.3, 0.8));
     world.add(make_shared<sphere>(point3(0,-1000,0), 1000, ground_material));
 
-    std::vector<std::pair<point3, double>> heart_sphere_data;
+    // Bolinhas aleatórias!
+    double random_balls_size = 0.08;
+    for (int a = -11; a < 11; a++) {
+        for (int b = -11; b < 11; b++) {
+            auto choose_mat = random_double();
+            point3 center(a + 0.9*random_double(), 0.2, b + 0.9*random_double());
 
+            if ((center - point3(4, 0.2, 0)).length() > 0.9) {
+                shared_ptr<material> sphere_material;
+
+                if (choose_mat < 0.8) {
+                    // diffuse
+                    auto albedo = color::random() * color::random();
+                    sphere_material = make_shared<lambertian>(albedo);
+                    world.add(make_shared<sphere>(center, random_balls_size, sphere_material));
+                } else if (choose_mat < 0.95) {
+                    // metal
+                    auto albedo = color::random(0.5, 1);
+                    auto fuzz = random_double(0, 0.5);
+                    sphere_material = make_shared<metal>(albedo, fuzz);
+                    world.add(make_shared<sphere>(center, random_balls_size, sphere_material));
+                } else {
+                    // glass
+                    sphere_material = make_shared<dielectric>(1.5);
+                    world.add(make_shared<sphere>(center, random_balls_size, sphere_material));
+                }
+            }
+        }
+    }
+
+    // Coração!
     int num_spheres = 17;
     double sphere_radius = num_spheres / 85.0;
     double scale_factor = 0.08;
@@ -57,55 +86,12 @@ int main() {
             sphere_material = make_shared<dielectric>(1.5);
         }
         world.add(make_shared<sphere>(center, sphere_radius, sphere_material));
-        heart_sphere_data.push_back({center, sphere_radius}); // Store heart sphere data
-    }
-
-    int num_additional_spheres_x = 10;
-    int num_additional_spheres_z = 10;
-    double spacing = 0.5;
-
-    for (int i = 0; i < num_additional_spheres_x; ++i) {
-        for (int j = 0; j < num_additional_spheres_z; ++j) {
-            point3 center(
-                -2.0 + i * spacing + random_double(-0.1, 0.1),
-                0.1,
-                -2.0 + j * spacing + random_double(-0.1, 0.1)
-            );
-
-            bool overlaps_with_heart = false;
-            for (const auto& heart_s : heart_sphere_data) {
-                double distance = (center - heart_s.first).length();
-                if (distance < (0.1 + heart_s.second)) { // 0.1 is radius of small sphere
-                    overlaps_with_heart = true;
-                    break;
-                }
-            }
-
-            if (overlaps_with_heart) {
-                continue; // Skip this small sphere if it overlaps
-            }
-
-            shared_ptr<material> sphere_material;
-
-            double choose_mat = random_double();
-            if (choose_mat < 0.8) {
-                // Diffuse
-                sphere_material = make_shared<lambertian>(color(random_double(), random_double(), random_double()));
-            } else if (choose_mat < 0.95) {
-                // Metal
-                sphere_material = make_shared<metal>(color(random_double(0.5, 1), random_double(0.5, 1), random_double(0.5, 1)), random_double(0, 0.05));
-            } else {
-                // Glass
-                sphere_material = make_shared<dielectric>(1.5);
-            }
-            world.add(make_shared<sphere>(center, 0.1, sphere_material)); // Small radius for additional spheres
-        }
     }
 
     camera cam;
 
     cam.aspect_ratio = 16.0 / 9.0;
-    cam.image_width = 320;
+    cam.image_width = 1600;
     cam.samples_per_pixel = 100;
     cam.max_depth = 50;
 
